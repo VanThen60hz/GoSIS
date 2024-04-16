@@ -11,24 +11,27 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func MergeData(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	personalsMap := make(map[string]models.Personal)
+	// Đọc pageNumber từ query string của URL
+	pageNumber, err := strconv.Atoi(c.Query("pageNumber"))
+	if err != nil {
+		c.JSON(responses.MergeResponse{Status: http.StatusBadRequest, Message: "Error in param pageNumber", Data: nil})
+	}
+
+	pageSize := 10
+
+	personalsMap, totalPersonal, _ := fetchPersonals(ctx, pageNumber, pageSize)
 	employeesMap := make(map[string]models.Employee)
 
-	rows, _ := sqlServerDB.QueryContext(ctx, "SELECT * FROM Personal")
-	for rows.Next() {
-		var p models.Personal
-		rows.Scan(&p.EmployeeID, &p.FirstName, &p.LastName, &p.MiddleInitial, &p.Address1, &p.Address2, &p.City, &p.State, &p.Zip, &p.Email, &p.PhoneNumber, &p.SocialSecurityNumber, &p.DriversLicense, &p.MaritalStatus, &p.Gender, &p.ShareholderStatus, &p.BenefitPlans, &p.Ethnicity)
-		personalsMap[p.FirstName+p.LastName] = p
-	}
-	rows.Close()
-
-	cursor, _ := employeeCollection.Find(ctx, bson.M{})
+	sort := bson.M{"FirstName": 1}
+	cursor, _ := employeeCollection.Find(ctx, bson.M{}, options.Find().SetSort(sort).SetSkip(int64(pageNumber)).SetLimit(int64(pageSize)))
+	totalEmployee, _ := employeeCollection.CountDocuments(context.TODO(), bson.D{})
 	for cursor.Next(ctx) {
 		var e models.Employee
 		cursor.Decode(&e)
@@ -126,6 +129,5 @@ func MergeData(c *fiber.Ctx) error {
 		}
 	}
 
-	dataMap := fiber.Map{"data": mergedData}
-	return c.JSON(responses.MergeResponse{Status: http.StatusOK, Message: "success", Data: &dataMap})
+	return c.JSON(responses.MergeResponse{Status: http.StatusOK, Message: "success", Data: &mergedData, TotalSize: totalPersonal + int(totalEmployee)})
 }

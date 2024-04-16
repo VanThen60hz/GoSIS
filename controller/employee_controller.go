@@ -36,8 +36,5 @@ func GetAllEmployees(c *fiber.Ctx) error {
 		employees = append(employees, employee)
 	}
 
-	// Tạo một fiber.Map mới và điền dữ liệu vào đó
-	dataMap := fiber.Map{"data": employees}
-
-	return c.JSON(responses.EmployeeResponse{Status: http.StatusOK, Message: "success", Data: &dataMap})
+	return c.JSON(responses.EmployeeResponse{Status: http.StatusOK, Message: "success", Data: &employees})
 }
