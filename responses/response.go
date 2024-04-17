@@ -2,6 +2,8 @@ package responses
 
 import (
 	"GoSIS/models"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type EmployeeResponse struct {
@@ -27,4 +29,10 @@ type MergeResponse struct {
 	Message   string                `json:"message"`
 	Data      *[]models.MergePerson `json:"data"`
 	TotalSize int                   `json:"total_size"`
+}
+
+type GenderRatioResponse struct {
+	Status  int        `json:"status"`
+	Message string     `json:"message"`
+	Data    *fiber.Map `json:"data"`
 }

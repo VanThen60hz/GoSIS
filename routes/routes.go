@@ -18,4 +18,7 @@ func GetRoute(app *fiber.App) {
 
 	// Merge Employee-Personal
 	app.Get("/merge-person", controllers.MergeData)
+
+	// Dashboard
+	app.Get("/gender-ratio", controllers.GenderRatio)
 }
