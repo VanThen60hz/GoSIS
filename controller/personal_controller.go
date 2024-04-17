@@ -58,9 +58,8 @@ func CreatePersonal(c *fiber.Ctx) error {
 	return c.JSON(responses.CreatePersonalReponse{Status: http.StatusOK, Message: "Create personal successfully", Data: p})
 }
 
-func fetchPersonals(ctx context.Context, pageNumber, pageSize int) (map[string]models.Personal, int, error) {
-	query := fmt.Sprintf("SELECT * FROM Personal ORDER BY First_Name OFFSET %d ROWS FETCH NEXT %d ROWS ONLY", pageNumber, pageSize)
-	rows, err := sqlServerDB.QueryContext(ctx, query)
+func fetchPersonals(ctx context.Context) (map[string]models.Personal, int, error) {
+	rows, err := sqlServerDB.QueryContext(ctx, "SELECT * FROM Personal ORDER BY First_Name")
 	if err != nil {
 		return nil, 0, fmt.Errorf("error fetching Personal data: %w", err)
 	}

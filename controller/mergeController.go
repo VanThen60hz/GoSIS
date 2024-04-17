@@ -18,26 +18,30 @@ func MergeData(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Đọc pageNumber từ query string của URL
-	pageNumber, err := strconv.Atoi(c.Query("pageNumber"))
+	personalsMap, totalPersonal, err := fetchPersonals(ctx)
 	if err != nil {
-		c.JSON(responses.MergeResponse{Status: http.StatusBadRequest, Message: "Error in param pageNumber", Data: nil})
+		return c.JSON(responses.MergeResponse{Status: http.StatusInternalServerError, Message: "Error fetching personals", Data: nil})
 	}
 
-	pageSize := 10
-
-	personalsMap, totalPersonal, _ := fetchPersonals(ctx, pageNumber, pageSize)
 	employeesMap := make(map[string]models.Employee)
 
 	sort := bson.M{"FirstName": 1}
-	cursor, _ := employeeCollection.Find(ctx, bson.M{}, options.Find().SetSort(sort).SetSkip(int64(pageNumber)).SetLimit(int64(pageSize)))
+	cursor, err := employeeCollection.Find(ctx, bson.M{}, options.Find().SetSort(sort))
+	if err != nil {
+		return c.JSON(responses.MergeResponse{Status: http.StatusInternalServerError, Message: "Error fetching employees", Data: nil})
+	}
+	defer cursor.Close(ctx)
+
 	totalEmployee, _ := employeeCollection.CountDocuments(context.TODO(), bson.D{})
+
 	for cursor.Next(ctx) {
 		var e models.Employee
-		cursor.Decode(&e)
+		err := cursor.Decode(&e)
+		if err != nil {
+			return c.JSON(responses.MergeResponse{Status: http.StatusInternalServerError, Message: "Error decoding employee", Data: nil})
+		}
 		employeesMap[e.FirstName+e.LastName] = e
 	}
-	cursor.Close(ctx)
 
 	var mergedData []models.MergePerson
 	for key, p := range personalsMap {
@@ -83,7 +87,7 @@ func MergeData(c *fiber.Ctx) error {
 				Address2:             p.Address2,
 				City:                 p.City,
 				State:                p.State,
-				Zip:                  p.Zip,
+				Zip:                  0,
 				Email:                p.Email,
 				PhoneNumber:          p.PhoneNumber,
 				SocialSecurityNumber: p.SocialSecurityNumber,
@@ -129,5 +133,32 @@ func MergeData(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.JSON(responses.MergeResponse{Status: http.StatusOK, Message: "success", Data: &mergedData, TotalSize: totalPersonal + int(totalEmployee)})
+	// Sort the mergedData slice by FirstName
+	sortByFirstName(mergedData)
+
+	// Đọc pageNumber từ query string của URL
+	pageNumber, err := strconv.Atoi(c.Query("pageNumber"))
+	if err != nil {
+		return c.JSON(responses.MergeResponse{Status: http.StatusBadRequest, Message: "Error in param pageNumber", Data: nil})
+	}
+
+	// Đọc pageNumber từ query string của URL
+	pageSize, err := strconv.Atoi(c.Query("pageSize"))
+	if err != nil {
+		return c.JSON(responses.MergeResponse{Status: http.StatusBadRequest, Message: "Error in param pageSize", Data: nil})
+	}
+
+	mergeRes := mergedData[pageNumber-1 : pageNumber-1+pageSize]
+
+	return c.JSON(responses.MergeResponse{Status: http.StatusOK, Message: "success", Data: &mergeRes, TotalSize: totalPersonal + int(totalEmployee)})
+}
+
+func sortByFirstName(mergedData []models.MergePerson) {
+	for i := 0; i < len(mergedData)-1; i++ {
+		for j := i + 1; j < len(mergedData); j++ {
+			if mergedData[i].FirstName > mergedData[j].FirstName {
+				mergedData[i], mergedData[j] = mergedData[j], mergedData[i]
+			}
+		}
+	}
 }
