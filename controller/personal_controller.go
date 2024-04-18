@@ -55,6 +55,41 @@ func CreatePersonal(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(responses.PersonalResponse{Status: http.StatusInternalServerError, Message: err.Error(), Data: nil})
 	}
 
+	// // Tạo một map[string]interface{} để chứa thông tin cá nhân
+	// personalData := map[string]interface{}{
+	// 	"employeeID":           p.EmployeeID,
+	// 	"firstName":            p.FirstName,
+	// 	"lastName":             p.LastName,
+	// 	"middleInitial":        p.MiddleInitial,
+	// 	"address1":             p.Address1,
+	// 	"address2":             p.Address2,
+	// 	"city":                 p.City,
+	// 	"state":                p.State,
+	// 	"zip":                  p.Zip,
+	// 	"email":                p.Email,
+	// 	"phoneNumber":          p.PhoneNumber,
+	// 	"socialSecurityNumber": p.SocialSecurityNumber,
+	// 	"driversLicense":       p.DriversLicense,
+	// 	"maritalStatus":        p.MaritalStatus,
+	// 	"gender":               p.Gender,
+	// 	"shareholderStatus":    p.ShareholderStatus,
+	// 	"benefitPlans":         p.BenefitPlans,
+	// 	"ethnicity":            p.Ethnicity,
+	// }
+
+	// // Sử dụng Pusher để gửi dữ liệu
+	// pusherClient := pusher.Client{
+	// 	AppID:   "1790030",
+	// 	Key:     "a359a59a30b4ddb07bb5",
+	// 	Secret:  "7010eecf86f9469246bf",
+	// 	Cluster: "ap1",
+	// 	Secure:  true,
+	// }
+	// err = pusherClient.Trigger("GoSIS", "personal-created", personalData)
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// }
+
 	return c.JSON(responses.CreatePersonalReponse{Status: http.StatusOK, Message: "Create personal successfully", Data: p})
 }
 
