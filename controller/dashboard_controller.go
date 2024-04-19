@@ -42,55 +42,55 @@ func GenderRatio(c *fiber.Ctx) error {
 		if e, ok := employeesMap[key]; ok {
 			mergedPerson := models.MergePerson{
 				EmployeeID:           e.EmployeeID + strconv.Itoa(int(p.EmployeeID)),
-				FirstName:            e.FirstName,
-				LastName:             e.LastName,
-				VacationDays:         e.VacationDays,
-				PaidToDate:           e.PaidToDate,
-				PaidLastYear:         e.PaidLastYear,
-				PayRate:              e.PayRate,
-				PayRateID:            e.PayRateID,
-				MiddleInitial:        p.MiddleInitial,
-				Address1:             p.Address1,
-				Address2:             p.Address2,
-				City:                 p.City,
-				State:                p.State,
-				Zip:                  p.Zip,
-				Email:                p.Email,
-				PhoneNumber:          p.PhoneNumber,
-				SocialSecurityNumber: p.SocialSecurityNumber,
-				DriversLicense:       p.DriversLicense,
-				MaritalStatus:        p.MaritalStatus,
-				Gender:               p.Gender,
-				ShareholderStatus:    p.ShareholderStatus,
-				BenefitPlans:         p.BenefitPlans,
-				Ethnicity:            p.Ethnicity,
+				FirstName:            &e.FirstName,
+				LastName:             &e.LastName,
+				VacationDays:         &e.VacationDays,
+				PaidToDate:           &e.PaidToDate,
+				PaidLastYear:         &e.PaidLastYear,
+				PayRate:              &e.PayRate,
+				PayRateID:            &e.PayRateID,
+				MiddleInitial:        &p.MiddleInitial,
+				Address1:             &p.Address1,
+				Address2:             &p.Address2,
+				City:                 &p.City,
+				State:                &p.State,
+				Zip:                  &p.Zip,
+				Email:                &p.Email,
+				PhoneNumber:          &p.PhoneNumber,
+				SocialSecurityNumber: &p.SocialSecurityNumber,
+				DriversLicense:       &p.DriversLicense,
+				MaritalStatus:        &p.MaritalStatus,
+				Gender:               &p.Gender,
+				ShareholderStatus:    &p.ShareholderStatus,
+				BenefitPlans:         &p.BenefitPlans,
+				Ethnicity:            &p.Ethnicity,
 			}
 			mergedData = append(mergedData, mergedPerson)
 		} else {
 			mergedPerson := models.MergePerson{
 				EmployeeID:           strconv.Itoa(int(p.EmployeeID)),
-				FirstName:            p.FirstName,
-				LastName:             p.LastName,
-				VacationDays:         0,
-				PaidToDate:           0,
-				PaidLastYear:         0,
-				PayRate:              0,
-				PayRateID:            0,
-				MiddleInitial:        p.MiddleInitial,
-				Address1:             p.Address1,
-				Address2:             p.Address2,
-				City:                 p.City,
-				State:                p.State,
-				Zip:                  p.Zip,
-				Email:                p.Email,
-				PhoneNumber:          p.PhoneNumber,
-				SocialSecurityNumber: p.SocialSecurityNumber,
-				DriversLicense:       p.DriversLicense,
-				MaritalStatus:        p.MaritalStatus,
-				Gender:               p.Gender,
-				ShareholderStatus:    p.ShareholderStatus,
-				BenefitPlans:         p.BenefitPlans,
-				Ethnicity:            p.Ethnicity,
+				FirstName:            &p.FirstName,
+				LastName:             &p.LastName,
+				VacationDays:         nil,
+				PaidToDate:           nil,
+				PaidLastYear:         nil,
+				PayRate:              nil,
+				PayRateID:            nil,
+				MiddleInitial:        &p.MiddleInitial,
+				Address1:             &p.Address1,
+				Address2:             &p.Address2,
+				City:                 &p.City,
+				State:                &p.State,
+				Zip:                  &p.Zip,
+				Email:                &p.Email,
+				PhoneNumber:          &p.PhoneNumber,
+				SocialSecurityNumber: &p.SocialSecurityNumber,
+				DriversLicense:       &p.DriversLicense,
+				MaritalStatus:        &p.MaritalStatus,
+				Gender:               &p.Gender,
+				ShareholderStatus:    &p.ShareholderStatus,
+				BenefitPlans:         &p.BenefitPlans,
+				Ethnicity:            &p.Ethnicity,
 			}
 			mergedData = append(mergedData, mergedPerson)
 		}
@@ -100,28 +100,28 @@ func GenderRatio(c *fiber.Ctx) error {
 		if _, ok := personalsMap[key]; !ok {
 			mergedPerson := models.MergePerson{
 				EmployeeID:           e.EmployeeID,
-				FirstName:            e.FirstName,
-				LastName:             e.LastName,
-				VacationDays:         e.VacationDays,
-				PaidToDate:           e.PaidToDate,
-				PaidLastYear:         e.PaidLastYear,
-				PayRate:              e.PayRate,
-				PayRateID:            e.PayRateID,
-				MiddleInitial:        "",
-				Address1:             "",
-				Address2:             "",
-				City:                 "",
-				State:                "",
-				Zip:                  0,
-				Email:                "",
-				PhoneNumber:          "",
-				SocialSecurityNumber: "",
-				DriversLicense:       "",
-				MaritalStatus:        "",
-				Gender:               false,
-				ShareholderStatus:    false,
-				BenefitPlans:         0,
-				Ethnicity:            "",
+				FirstName:            &e.FirstName,
+				LastName:             &e.LastName,
+				VacationDays:         &e.VacationDays,
+				PaidToDate:           &e.PaidToDate,
+				PaidLastYear:         &e.PaidLastYear,
+				PayRate:              &e.PayRate,
+				PayRateID:            &e.PayRateID,
+				MiddleInitial:        nil,
+				Address1:             nil,
+				Address2:             nil,
+				City:                 nil,
+				State:                nil,
+				Zip:                  nil,
+				Email:                nil,
+				PhoneNumber:          nil,
+				SocialSecurityNumber: nil,
+				DriversLicense:       nil,
+				MaritalStatus:        nil,
+				Gender:               nil,
+				ShareholderStatus:    nil,
+				BenefitPlans:         nil,
+				Ethnicity:            nil,
 			}
 			mergedData = append(mergedData, mergedPerson)
 		}
@@ -129,20 +129,29 @@ func GenderRatio(c *fiber.Ctx) error {
 
 	maleCount, femaleCount := 0.0, 0.0
 	for _, person := range mergedData {
-		if person.Gender {
+
+		if person.Gender == nil {
+			continue
+		}
+
+		if *person.Gender {
 			maleCount++
 		} else {
 			femaleCount++
 		}
 	}
 
-	maleRatio := maleCount * 100 / (maleCount + femaleCount)
-	femaleRatio := femaleCount * 100 / (maleCount + femaleCount)
+	otherCount := float64(len(mergedData)) - femaleCount - maleCount
+
+	maleRatio := maleCount * 100 / float64(len(mergedData))
+	femaleRatio := femaleCount * 100 / float64(len(mergedData))
+	otherRatio := otherCount * 100 / float64(len(mergedData))
 
 	dataMap := fiber.Map{
 		"total":  len(mergedData),
 		"male":   math.Round(maleRatio),
 		"female": math.Round(femaleRatio),
+		"other":  math.Round(otherRatio),
 	}
 	return c.JSON(responses.GenderRatioResponse{Status: http.StatusOK, Message: "success", Data: &dataMap})
 }
