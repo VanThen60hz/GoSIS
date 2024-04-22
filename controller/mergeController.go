@@ -47,7 +47,8 @@ func MergeData(c *fiber.Ctx) error {
 	for key, p := range personalsMap {
 		if e, ok := employeesMap[key]; ok {
 			mergedPerson := models.MergePerson{
-				EmployeeID:           e.EmployeeID + strconv.Itoa(int(p.EmployeeID)),
+				SQLEmployeeId:        &p.SQLEmployeeId,
+				MongoDBEmployeeID:    &e.EmployeeId,
 				FirstName:            &e.FirstName,
 				LastName:             &e.LastName,
 				VacationDays:         &e.VacationDays,
@@ -74,7 +75,8 @@ func MergeData(c *fiber.Ctx) error {
 			mergedData = append(mergedData, mergedPerson)
 		} else {
 			mergedPerson := models.MergePerson{
-				EmployeeID:           strconv.Itoa(int(p.EmployeeID)),
+				SQLEmployeeId:        &p.SQLEmployeeId,
+				MongoDBEmployeeID:    nil,
 				FirstName:            &p.FirstName,
 				LastName:             &p.LastName,
 				VacationDays:         nil,
@@ -105,7 +107,8 @@ func MergeData(c *fiber.Ctx) error {
 	for key, e := range employeesMap {
 		if _, ok := personalsMap[key]; !ok {
 			mergedPerson := models.MergePerson{
-				EmployeeID:           e.EmployeeID,
+				SQLEmployeeId:        nil,
+				MongoDBEmployeeID:    &e.EmployeeId,
 				FirstName:            &e.FirstName,
 				LastName:             &e.LastName,
 				VacationDays:         &e.VacationDays,

@@ -4,7 +4,6 @@ import (
 	"context"
 	"math"
 	"net/http"
-	"strconv"
 	"time"
 
 	"GoSIS/models"
@@ -24,7 +23,7 @@ func GenderRatio(c *fiber.Ctx) error {
 	rows, _ := sqlServerDB.QueryContext(ctx, "SELECT * FROM Personal")
 	for rows.Next() {
 		var p models.Personal
-		rows.Scan(&p.EmployeeID, &p.FirstName, &p.LastName, &p.MiddleInitial, &p.Address1, &p.Address2, &p.City, &p.State, &p.Zip, &p.Email, &p.PhoneNumber, &p.SocialSecurityNumber, &p.DriversLicense, &p.MaritalStatus, &p.Gender, &p.ShareholderStatus, &p.BenefitPlans, &p.Ethnicity)
+		rows.Scan(&p.SQLEmployeeId, &p.FirstName, &p.LastName, &p.MiddleInitial, &p.Address1, &p.Address2, &p.City, &p.State, &p.Zip, &p.Email, &p.PhoneNumber, &p.SocialSecurityNumber, &p.DriversLicense, &p.MaritalStatus, &p.Gender, &p.ShareholderStatus, &p.BenefitPlans, &p.Ethnicity)
 		personalsMap[p.FirstName+p.LastName] = p
 	}
 	rows.Close()
@@ -41,7 +40,8 @@ func GenderRatio(c *fiber.Ctx) error {
 	for key, p := range personalsMap {
 		if e, ok := employeesMap[key]; ok {
 			mergedPerson := models.MergePerson{
-				EmployeeID:           e.EmployeeID + strconv.Itoa(int(p.EmployeeID)),
+				SQLEmployeeId:        &p.SQLEmployeeId,
+				MongoDBEmployeeID:    &e.EmployeeId,
 				FirstName:            &e.FirstName,
 				LastName:             &e.LastName,
 				VacationDays:         &e.VacationDays,
@@ -68,7 +68,8 @@ func GenderRatio(c *fiber.Ctx) error {
 			mergedData = append(mergedData, mergedPerson)
 		} else {
 			mergedPerson := models.MergePerson{
-				EmployeeID:           strconv.Itoa(int(p.EmployeeID)),
+				SQLEmployeeId:        &p.SQLEmployeeId,
+				MongoDBEmployeeID:    nil,
 				FirstName:            &p.FirstName,
 				LastName:             &p.LastName,
 				VacationDays:         nil,
@@ -99,7 +100,8 @@ func GenderRatio(c *fiber.Ctx) error {
 	for key, e := range employeesMap {
 		if _, ok := personalsMap[key]; !ok {
 			mergedPerson := models.MergePerson{
-				EmployeeID:           e.EmployeeID,
+				SQLEmployeeId:        nil,
+				MongoDBEmployeeID:    &e.EmployeeId,
 				FirstName:            &e.FirstName,
 				LastName:             &e.LastName,
 				VacationDays:         &e.VacationDays,

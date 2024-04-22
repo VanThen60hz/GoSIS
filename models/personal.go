@@ -1,7 +1,7 @@
 package models
 
 type Personal struct {
-	EmployeeID           int64  `json:"Employee_ID"`
+	SQLEmployeeId        int64  `json:"SQL_Employee_ID"`
 	FirstName            string `json:"First_Name"`
 	LastName             string `json:"Last_Name"`
 	MiddleInitial        string `json:"Middle_Initial"`

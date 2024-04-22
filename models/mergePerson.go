@@ -1,7 +1,8 @@
 package models
 
 type MergePerson struct {
-	EmployeeID           string   `json:"EmployeeID"`
+	SQLEmployeeId        *int64   `json:"SQL_Employee_ID"`
+	MongoDBEmployeeID    *string  `json:"mongoDBEmployeeId"`
 	FirstName            *string  `json:"firstName"`
 	LastName             *string  `json:"lastName"`
 	VacationDays         *int64   `json:"vacationDays"`
