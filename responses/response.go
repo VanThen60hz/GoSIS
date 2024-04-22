@@ -11,6 +11,11 @@ type EmployeeResponse struct {
 	Message string             `json:"message"`
 	Data    *[]models.Employee `json:"data"`
 }
+type CreateEmployeeResponse struct {
+	Status  int                   `json:"status"`
+	Message string                `json:"message"`
+	Data    *models.EmployeeNotID `json:"data"`
+}
 
 type PersonalResponse struct {
 	Status  int                `json:"status"`
@@ -18,7 +23,7 @@ type PersonalResponse struct {
 	Data    *[]models.Personal `json:"data"`
 }
 
-type CreatePersonalReponse struct {
+type CreatePersonalResponse struct {
 	Status  int              `json:"status"`
 	Message string           `json:"message"`
 	Data    *models.Personal `json:"data"`

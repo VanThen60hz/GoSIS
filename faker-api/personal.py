@@ -4,14 +4,15 @@ from faker import Faker
 
 fake = Faker('vi_VN')  # Vietnamese locale
 
-url = "http://localhost:6000/personal"
+url = "http://localhost:8080/personal"
 headers = {'Content-Type': 'application/json'}
 
 n = int(input("Nhập số lượng request : "))
 
+count = 198
 for i in range(n):
     payload = json.dumps({
-        "Employee_ID": fake.random_number(digits=4, fix_len=True),
+        "SQL_Employee_ID": count,
         "First_Name": fake.first_name(),
         "Last_Name": fake.last_name(),
         "Middle_Initial": fake.random_letter(),
@@ -30,6 +31,8 @@ for i in range(n):
         "Benefit_Plans": fake.random_int(min=1, max=3),
         "Ethnicity": "Kinh"
     })
+
+    count += 1
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
