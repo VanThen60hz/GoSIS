@@ -10,6 +10,7 @@ import (
 	"GoSIS/responses"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -47,6 +48,9 @@ func CreateEmployee(c *fiber.Ctx) error {
 	if err := c.BodyParser(&employee); err != nil {
 		return c.Status(http.StatusBadRequest).JSON(responses.EmployeeResponse{Status: http.StatusBadRequest, Message: "invalid employee data", Data: nil})
 	}
+
+	// Generate a new UUID for EmployeeID
+	employee.EmployeeId = uuid.New().String()
 
 	// Set timestamps for creation and update
 	employee.CreatedAt = time.Now()
