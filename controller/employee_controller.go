@@ -25,7 +25,7 @@ func GetAllEmployees(c *fiber.Ctx) error {
 
 	cursor, err := employeeCollection.Find(ctx, bson.M{})
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).JSON(responses.EmployeeResponse{Status: http.StatusInternalServerError, Message: "error", Data: nil})
+		return c.Status(http.StatusNotFound).JSON(responses.EmployeeResponse{Status: http.StatusNotFound, Message: "error", Data: nil})
 	}
 	defer cursor.Close(ctx)
 

@@ -22,4 +22,7 @@ func GetRoute(app *fiber.App) {
 
 	// Dashboard
 	app.Get("/gender-ratio", controllers.GenderRatio)
+
+	// CUD both
+	app.Post("/both", controllers.CreateBoth)
 }
