@@ -49,17 +49,13 @@ func CreateEmployee(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(responses.EmployeeResponse{Status: http.StatusBadRequest, Message: "invalid employee data", Data: nil})
 	}
 
-	// Generate a new UUID for EmployeeID
 	employee.EmployeeId = uuid.New().String()
 
-	// Set timestamps for creation and update
 	employee.CreatedAt = time.Now()
 	employee.UpdatedAt = time.Now()
 
-	// Insert the employee document into the database
 	_, err := employeeCollection.InsertOne(ctx, employee)
 	if err != nil {
-		// Handle potential duplicate EmployeeID errors
 		if mongo.IsDuplicateKeyError(err) {
 			return c.Status(http.StatusConflict).JSON(responses.EmployeeResponse{Status: http.StatusConflict, Message: err.Error(), Data: nil})
 		}

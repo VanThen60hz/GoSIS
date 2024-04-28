@@ -9,7 +9,7 @@ headers = {'Content-Type': 'application/json'}
 
 n = int(input("Nhập số lượng request : "))
 
-count = 198
+count = 350
 for i in range(n):
     payload = json.dumps({
         "SQL_Employee_ID": count,

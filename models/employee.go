@@ -21,14 +21,14 @@ type Employee struct {
 }
 
 type EmployeeNotID struct {
-	EmployeeId   string    `bson:"employeeId"`
-	FirstName    string    `bson:"firstName"`
-	LastName     string    `bson:"lastName"`
-	VacationDays int64     `bson:"vacationDays"`
-	PaidToDate   int64     `bson:"paidToDate"`
-	PaidLastYear int64     `bson:"paidLastYear"`
-	PayRate      float64   `bson:"payRate"`
-	PayRateID    int64     `bson:"payRateId"`
+	EmployeeId   string    `bson:"employeeId" form:"employeeId"`
+	FirstName    string    `bson:"firstName" form:"firstName"`
+	LastName     string    `bson:"lastName" form:"lastName"`
+	VacationDays int64     `bson:"vacationDays" form:"vacationDays"`
+	PaidToDate   int64     `bson:"paidToDate" form:"paidToDate"`
+	PaidLastYear int64     `bson:"paidLastYear" form:"paidLastYear"`
+	PayRate      float64   `bson:"payRate" form:"payRate"`
+	PayRateID    int64     `bson:"payRateId" form:"payRateId"`
 	CreatedAt    time.Time `bson:"createdAt,omitempty"`
 	UpdatedAt    time.Time `bson:"updatedAt,omitempty"`
 }

@@ -136,16 +136,13 @@ func MergeData(c *fiber.Ctx) error {
 		}
 	}
 
-	// Sort the mergedData slice by FirstName
 	sortByFirstName(mergedData)
 
-	// Đọc pageNumber từ query string của URL
 	pageNumber, err := strconv.Atoi(c.Query("pageNumber"))
 	if err != nil {
 		return c.JSON(responses.MergeResponse{Status: http.StatusBadRequest, Message: "Error in param pageNumber", Data: nil})
 	}
 
-	// Đọc pageNumber từ query string của URL
 	pageSize, err := strconv.Atoi(c.Query("pageSize"))
 	if err != nil {
 		return c.JSON(responses.MergeResponse{Status: http.StatusBadRequest, Message: "Error in param pageSize", Data: nil})
