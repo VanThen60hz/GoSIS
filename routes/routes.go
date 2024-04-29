@@ -12,6 +12,7 @@ func GetRoute(app *fiber.App) {
 	// Employee route
 	app.Get("/employee", controllers.GetAllEmployees)
 	app.Post("/employee", controllers.CreateEmployee)
+	app.Patch("/employee", controllers.UpdateEmployee)
 
 	// Personal route
 	app.Get("/personal", controllers.GetAllPersonals)

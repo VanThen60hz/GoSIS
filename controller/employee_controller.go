@@ -64,3 +64,34 @@ func CreateEmployee(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusCreated).JSON(responses.CreateEmployeeResponse{Status: http.StatusCreated, Message: "employee created successfully", Data: &employee})
 }
+
+func UpdateEmployee(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var employee models.EmployeeNotID
+	if err := c.BodyParser(&employee); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(responses.EmployeeResponse{Status: http.StatusBadRequest, Message: err.Error(), Data: nil})
+	}
+
+	filter := bson.M{"employeeId": employee.EmployeeId}
+	update := bson.M{
+		"$set": bson.M{
+			"firstName":    employee.FirstName,
+			"lastName":     employee.LastName,
+			"vacationDays": employee.VacationDays,
+			"paidToDate":   employee.PaidToDate,
+			"paidLastYear": employee.PaidLastYear,
+			"payRate":      employee.PayRate,
+			"payRateID":    employee.PayRateID,
+			"updatedAt":    time.Now(),
+		},
+	}
+
+	_, err := employeeCollection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.UpdateEmployeeResponse{Status: http.StatusInternalServerError, Message: "error updating employee in MongoDB", Data: nil})
+	}
+
+	return c.Status(http.StatusCreated).JSON(responses.UpdateEmployeeResponse{Status: http.StatusCreated, Message: "employee created successfully", Data: &employee})
+}

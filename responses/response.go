@@ -47,3 +47,9 @@ type CreateBothResponse struct {
 	Message string                       `json:"message"`
 	Data    *models.MergePersonWithoutId `json:"data"`
 }
+
+type UpdateEmployeeResponse struct {
+	Status  int                   `json:"status"`
+	Message string                `json:"message"`
+	Data    *models.EmployeeNotID `json:"data"`
+}
