@@ -17,6 +17,7 @@ func GetRoute(app *fiber.App) {
 	// Personal route
 	app.Get("/personal", controllers.GetAllPersonals)
 	app.Post("/personal", controllers.CreatePersonal)
+	app.Patch("/personal", controllers.UpdatePersonal)
 
 	// Merge Employee-Personal
 	app.Get("/merge-person", controllers.MergeData)

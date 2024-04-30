@@ -53,3 +53,9 @@ type UpdateEmployeeResponse struct {
 	Message string                `json:"message"`
 	Data    *models.EmployeeNotID `json:"data"`
 }
+
+type UpdatePersonalResponse struct {
+	Status  int              `json:"status"`
+	Message string           `json:"message"`
+	Data    *models.Personal `json:"data"`
+}

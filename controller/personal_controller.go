@@ -66,6 +66,34 @@ func CreatePersonal(c *fiber.Ctx) error {
 	return c.JSON(responses.CreatePersonalResponse{Status: http.StatusOK, Message: "Create personal successfully", Data: p})
 }
 
+func UpdatePersonal(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	p := new(models.Personal)
+	if err := c.BodyParser(p); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(responses.PersonalResponse{Status: http.StatusBadRequest, Message: err.Error(), Data: nil})
+	}
+
+	_, err := sqlServerDB.ExecContext(ctx, `
+        UPDATE Personal 
+        SET First_Name = @p2, Last_Name = @p3, Middle_Initial = @p4, Address1 = @p5, Address2 = @p6, 
+            City = @p7, State = @p8, Zip = @p9, Email = @p10, Phone_Number = @p11, 
+            Social_Security_Number = @p12, Drivers_License = @p13, Marital_Status = @p14, 
+            Gender = @p15, Shareholder_Status = @p16, Benefit_Plans = @p17, Ethnicity = @p18
+        WHERE Employee_ID = @p1`,
+		sql.Named("p1", p.SQLEmployeeId), sql.Named("p2", p.FirstName), sql.Named("p3", p.LastName), sql.Named("p4", p.MiddleInitial),
+		sql.Named("p5", p.Address1), sql.Named("p6", p.Address2), sql.Named("p7", p.City), sql.Named("p8", p.State),
+		sql.Named("p9", p.Zip), sql.Named("p10", p.Email), sql.Named("p11", p.PhoneNumber), sql.Named("p12", p.SocialSecurityNumber),
+		sql.Named("p13", p.DriversLicense), sql.Named("p14", p.MaritalStatus), sql.Named("p15", p.Gender),
+		sql.Named("p16", p.ShareholderStatus), sql.Named("p17", p.BenefitPlans), sql.Named("p18", p.Ethnicity))
+	if err != nil {
+		return c.Status(http.StatusInternalServerError).JSON(responses.PersonalResponse{Status: http.StatusInternalServerError, Message: err.Error(), Data: nil})
+	}
+
+	return c.JSON(responses.UpdatePersonalResponse{Status: http.StatusOK, Message: "Update personal successfully", Data: p})
+}
+
 func fetchPersonals(ctx context.Context) (map[string]models.Personal, int, error) {
 	rows, err := sqlServerDB.QueryContext(ctx, "SELECT * FROM Personal ORDER BY First_Name")
 	if err != nil {
