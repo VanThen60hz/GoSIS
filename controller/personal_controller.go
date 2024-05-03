@@ -121,3 +121,15 @@ func fetchPersonals(ctx context.Context) (map[string]models.Personal, int, error
 
 	return personalsMap, totalCount, nil
 }
+
+func deletePersonal(personalID int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err := sqlServerDB.ExecContext(ctx, "DELETE FROM Personal WHERE Employee_ID = @p1", sql.Named("p1", personalID))
+	if err != nil {
+		return fmt.Errorf("error deleting Personal: %w", err)
+	}
+
+	return nil
+}

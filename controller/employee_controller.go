@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -94,4 +95,19 @@ func UpdateEmployee(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusCreated).JSON(responses.UpdateEmployeeResponse{Status: http.StatusCreated, Message: "employee created successfully", Data: &employee})
+}
+
+func deleteEmployee(employeeID string) error {
+	filter := bson.M{"employeeId": employeeID}
+
+	result, err := employeeCollection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return errors.New("employee not found")
+	}
+
+	return nil
 }

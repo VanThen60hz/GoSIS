@@ -27,4 +27,6 @@ func GetRoute(app *fiber.App) {
 
 	// CUD both
 	app.Post("/both", controllers.CreateBoth)
+	app.Patch("/both", controllers.UpdateBoth)
+	app.Delete("/both", controllers.DeleteBoth)
 }

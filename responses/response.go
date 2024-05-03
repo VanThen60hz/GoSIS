@@ -59,3 +59,14 @@ type UpdatePersonalResponse struct {
 	Message string           `json:"message"`
 	Data    *models.Personal `json:"data"`
 }
+
+type UpdateBothResponse struct {
+	Status  int                 `json:"status"`
+	Message string              `json:"message"`
+	Data    *models.MergePerson `json:"data"`
+}
+
+type DeleteBothResponse struct {
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+}

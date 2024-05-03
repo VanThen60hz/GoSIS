@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/pusher/pusher-http-go/v5"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -101,4 +102,218 @@ func CreateBoth(c *fiber.Ctx) error {
 	}
 
 	return c.Status(http.StatusCreated).JSON(responses.CreateBothResponse{Status: http.StatusCreated, Message: "employee created successfully", Data: &mergePersonWithoutId})
+}
+
+func UpdateBoth(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var mergePerson models.MergePerson
+	if err := c.BodyParser(&mergePerson); err != nil {
+		return c.Status(http.StatusBadRequest).JSON(responses.CreateBothResponse{
+			Status:  http.StatusBadRequest,
+			Message: "invalid merge person data",
+			Data:    nil,
+		})
+	}
+
+	if mergePerson.MongoDBEmployeeID == nil {
+		e := models.EmployeeNotID{
+			FirstName:    *mergePerson.FirstName,
+			LastName:     *mergePerson.LastName,
+			VacationDays: *mergePerson.VacationDays,
+			PaidToDate:   *mergePerson.PaidToDate,
+			PaidLastYear: *mergePerson.PaidLastYear,
+			PayRate:      *mergePerson.PayRate,
+			PayRateID:    *mergePerson.PayRateID,
+		}
+
+		e.EmployeeId = uuid.New().String()
+
+		e.CreatedAt = time.Now()
+		e.UpdatedAt = time.Now()
+
+		_, err := employeeCollection.InsertOne(ctx, e)
+		if err != nil {
+			if mongo.IsDuplicateKeyError(err) {
+				return c.Status(http.StatusConflict).JSON(responses.EmployeeResponse{Status: http.StatusConflict, Message: err.Error(), Data: nil})
+			}
+			return c.Status(http.StatusInternalServerError).JSON(responses.EmployeeResponse{Status: http.StatusInternalServerError, Message: "error creating employee", Data: nil})
+		}
+
+		mergePerson.MongoDBEmployeeID = &e.EmployeeId
+
+	} else {
+		// Update MongoDB
+		filter := bson.M{"employeeId": mergePerson.MongoDBEmployeeID}
+		update := bson.M{
+			"$set": bson.M{
+				"firstName":    mergePerson.FirstName,
+				"lastName":     mergePerson.LastName,
+				"vacationDays": mergePerson.VacationDays,
+				"paidToDate":   mergePerson.PaidToDate,
+				"paidLastYear": mergePerson.PaidLastYear,
+				"payRate":      mergePerson.PayRate,
+				"payRateId":    mergePerson.PayRateID,
+				"updatedAt":    time.Now(),
+			},
+		}
+		_, err := employeeCollection.UpdateOne(ctx, filter, update)
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(responses.UpdateEmployeeResponse{
+				Status:  http.StatusInternalServerError,
+				Message: "error updating employee in MongoDB",
+				Data:    nil,
+			})
+		}
+	}
+
+	if mergePerson.SQLEmployeeId == nil {
+		p := models.Personal{
+			FirstName:            *mergePerson.FirstName,
+			LastName:             *mergePerson.LastName,
+			MiddleInitial:        *mergePerson.MiddleInitial,
+			Address1:             *mergePerson.Address1,
+			Address2:             *mergePerson.Address2,
+			City:                 *mergePerson.City,
+			State:                *mergePerson.State,
+			Zip:                  *mergePerson.Zip,
+			Email:                *mergePerson.Email,
+			PhoneNumber:          *mergePerson.PhoneNumber,
+			SocialSecurityNumber: *mergePerson.SocialSecurityNumber,
+			DriversLicense:       *mergePerson.DriversLicense,
+			MaritalStatus:        *mergePerson.MaritalStatus,
+			Gender:               *mergePerson.Gender,
+			ShareholderStatus:    *mergePerson.ShareholderStatus,
+			BenefitPlans:         *mergePerson.BenefitPlans,
+			Ethnicity:            *mergePerson.Ethnicity,
+		}
+
+		var lastInsertID int64
+		err := sqlServerDB.QueryRowContext(ctx, "SELECT TOP 1 Employee_ID FROM Personal ORDER BY Employee_ID DESC").Scan(&lastInsertID)
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(responses.PersonalResponse{Status: http.StatusInternalServerError, Message: err.Error(), Data: nil})
+		}
+		newEmployeeID := lastInsertID + 1
+		p.SQLEmployeeId = newEmployeeID
+
+		_, err = sqlServerDB.ExecContext(ctx, "INSERT INTO Personal (Employee_ID, First_Name, Last_Name, Middle_Initial, Address1, Address2, City, State, Zip, Email, Phone_Number, Social_Security_Number, Drivers_License, Marital_Status, Gender, Shareholder_Status, Benefit_Plans, Ethnicity) VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18)",
+			sql.Named("p1", newEmployeeID), sql.Named("p2", p.FirstName), sql.Named("p3", p.LastName), sql.Named("p4", p.MiddleInitial), sql.Named("p5", p.Address1), sql.Named("p6", p.Address2), sql.Named("p7", p.City), sql.Named("p8", p.State), sql.Named("p9", p.Zip), sql.Named("p10", p.Email), sql.Named("p11", p.PhoneNumber), sql.Named("p12", p.SocialSecurityNumber), sql.Named("p13", p.DriversLicense), sql.Named("p14", p.MaritalStatus), sql.Named("p15", p.Gender), sql.Named("p16", p.ShareholderStatus), sql.Named("p17", p.BenefitPlans), sql.Named("p18", p.Ethnicity))
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(responses.PersonalResponse{Status: http.StatusInternalServerError, Message: err.Error(), Data: nil})
+		}
+
+		mergePerson.SQLEmployeeId = &newEmployeeID
+
+	} else {
+		p := &models.Personal{
+			SQLEmployeeId:        *mergePerson.SQLEmployeeId,
+			FirstName:            *mergePerson.FirstName,
+			LastName:             *mergePerson.LastName,
+			MiddleInitial:        *mergePerson.MiddleInitial,
+			Address1:             *mergePerson.Address1,
+			Address2:             *mergePerson.Address2,
+			City:                 *mergePerson.City,
+			State:                *mergePerson.State,
+			Zip:                  *mergePerson.Zip,
+			Email:                *mergePerson.Email,
+			PhoneNumber:          *mergePerson.PhoneNumber,
+			SocialSecurityNumber: *mergePerson.SocialSecurityNumber,
+			DriversLicense:       *mergePerson.DriversLicense,
+			MaritalStatus:        *mergePerson.MaritalStatus,
+			Gender:               *mergePerson.Gender,
+			ShareholderStatus:    *mergePerson.ShareholderStatus,
+			BenefitPlans:         *mergePerson.BenefitPlans,
+			Ethnicity:            *mergePerson.Ethnicity,
+		}
+
+		_, err := sqlServerDB.ExecContext(ctx, `
+	UPDATE Personal 
+	SET First_Name = @p2, Last_Name = @p3, Middle_Initial = @p4, Address1 = @p5, Address2 = @p6, 
+		City = @p7, State = @p8, Zip = @p9, Email = @p10, Phone_Number = @p11, 
+		Social_Security_Number = @p12, Drivers_License = @p13, Marital_Status = @p14, 
+		Gender = @p15, Shareholder_Status = @p16, Benefit_Plans = @p17, Ethnicity = @p18
+	WHERE Employee_ID = @p1`,
+			sql.Named("p1", p.SQLEmployeeId),
+			sql.Named("p2", p.FirstName),
+			sql.Named("p3", p.LastName),
+			sql.Named("p4", p.MiddleInitial),
+			sql.Named("p5", p.Address1),
+			sql.Named("p6", p.Address2),
+			sql.Named("p7", p.City),
+			sql.Named("p8", p.State),
+			sql.Named("p9", p.Zip),
+			sql.Named("p10", p.Email),
+			sql.Named("p11", p.PhoneNumber),
+			sql.Named("p12", p.SocialSecurityNumber),
+			sql.Named("p13", p.DriversLicense),
+			sql.Named("p14", p.MaritalStatus),
+			sql.Named("p15", p.Gender),
+			sql.Named("p16", p.ShareholderStatus),
+			sql.Named("p17", p.BenefitPlans),
+			sql.Named("p18", p.Ethnicity),
+		)
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(responses.PersonalResponse{
+				Status:  http.StatusInternalServerError,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+	}
+
+	return c.Status(http.StatusCreated).JSON(responses.UpdateBothResponse{
+		Status:  http.StatusOK,
+		Message: "edit both successfully",
+		Data:    &mergePerson,
+	})
+}
+
+func DeleteBoth(c *fiber.Ctx) error {
+	_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	type DeleteRequest struct {
+		SQLEmployeeID     *int64  `json:"SQL_Employee_ID"`
+		MongoDBEmployeeID *string `json:"mongoDBEmployeeId"`
+	}
+
+	var request DeleteRequest
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Failed to parse request body",
+		})
+	}
+
+	if request.SQLEmployeeID == nil && request.MongoDBEmployeeID == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Missing delete info in request body",
+		})
+	}
+
+	if request.MongoDBEmployeeID != nil {
+		err := deleteEmployee(*request.MongoDBEmployeeID)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(responses.UpdateBothResponse{
+				Status:  http.StatusBadRequest,
+				Message: err.Error(),
+			})
+		}
+	}
+
+	if request.SQLEmployeeID != nil {
+		err := deletePersonal(*request.SQLEmployeeID)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(responses.UpdateBothResponse{
+				Status:  http.StatusBadRequest,
+				Message: err.Error(),
+			})
+		}
+	}
+
+	return c.Status(http.StatusCreated).JSON(responses.DeleteBothResponse{
+		Status:  http.StatusOK,
+		Message: "Delete successful",
+	})
 }
