@@ -263,6 +263,11 @@ func UpdateBoth(c *fiber.Ctx) error {
 
 	}
 
+	err := pusherClient.Trigger("GoSIS", "both-edited", mergePerson)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return c.Status(http.StatusCreated).JSON(responses.UpdateBothResponse{
 		Status:  http.StatusOK,
 		Message: "edit both successfully",
@@ -277,6 +282,7 @@ func DeleteBoth(c *fiber.Ctx) error {
 	type DeleteRequest struct {
 		SQLEmployeeID     *int64  `json:"SQL_Employee_ID"`
 		MongoDBEmployeeID *string `json:"mongoDBEmployeeId"`
+		FullName          string  `json:"fullName"`
 	}
 
 	var request DeleteRequest
@@ -310,6 +316,11 @@ func DeleteBoth(c *fiber.Ctx) error {
 				Message: err.Error(),
 			})
 		}
+	}
+
+	err := pusherClient.Trigger("GoSIS", "both-deleted", request.FullName)
+	if err != nil {
+		fmt.Println(err.Error())
 	}
 
 	return c.Status(http.StatusCreated).JSON(responses.DeleteBothResponse{
