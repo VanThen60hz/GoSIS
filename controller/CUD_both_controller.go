@@ -226,7 +226,6 @@ func UpdateBoth(c *fiber.Ctx) error {
 		var lastInsertID int64
 		err := sqlServerDB.QueryRowContext(ctx, "SELECT TOP 1 Employee_ID FROM Personal ORDER BY Employee_ID DESC").Scan(&lastInsertID)
 		if err != nil {
-			// Handle SQL query error
 			return c.Status(http.StatusInternalServerError).JSON(responses.PersonalResponse{
 				Status:  http.StatusInternalServerError,
 				Message: err.Error(),
@@ -236,7 +235,6 @@ func UpdateBoth(c *fiber.Ctx) error {
 		newEmployeeID := lastInsertID + 1
 		p.SQLEmployeeId = newEmployeeID
 
-		// Insert new record into SQL database
 		_, err = sqlServerDB.ExecContext(ctx, "INSERT INTO Personal (Employee_ID, First_Name, Last_Name, Middle_Initial, Address1, Address2, City, State, Zip, Email, Phone_Number, Social_Security_Number, Drivers_License, Marital_Status, Gender, Shareholder_Status, Benefit_Plans, Ethnicity) VALUES (@p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18)",
 			sql.Named("p1", newEmployeeID), sql.Named("p2", p.FirstName), sql.Named("p3", p.LastName), sql.Named("p4", p.MiddleInitial), sql.Named("p5", p.Address1), sql.Named("p6", p.Address2), sql.Named("p7", p.City), sql.Named("p8", p.State), sql.Named("p9", p.Zip), sql.Named("p10", p.Email), sql.Named("p11", p.PhoneNumber), sql.Named("p12", p.SocialSecurityNumber), sql.Named("p13", p.DriversLicense), sql.Named("p14", p.MaritalStatus), sql.Named("p15", p.Gender), sql.Named("p16", p.ShareholderStatus), sql.Named("p17", p.BenefitPlans), sql.Named("p18", p.Ethnicity))
 		if err != nil {
@@ -248,7 +246,6 @@ func UpdateBoth(c *fiber.Ctx) error {
 			})
 		}
 
-		// Update mergePerson.SQLEmployeeId with the newEmployeeID
 		mergePerson.SQLEmployeeId = &newEmployeeID
 
 	} else {
@@ -367,26 +364,6 @@ func DeleteBoth(c *fiber.Ctx) error {
 
 	defer tx.Rollback()
 
-	if request.MongoDBEmployeeID != nil {
-		mongoDBEmployeeID := *request.MongoDBEmployeeID
-		filter := bson.M{"employeeId": mongoDBEmployeeID}
-
-		result, err := employeeCollection.DeleteOne(context.Background(), filter)
-		if err != nil {
-			tx.Rollback()
-			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-				"message": err.Error(),
-			})
-		}
-
-		if result.DeletedCount == 0 {
-			tx.Rollback()
-			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
-				"message": "Employee not found in MongoDB or SQL server",
-			})
-		}
-	}
-
 	if request.SQLEmployeeID != nil {
 		sqlEmployeeID := *request.SQLEmployeeID
 
@@ -410,6 +387,26 @@ func DeleteBoth(c *fiber.Ctx) error {
 			tx.Rollback()
 			return c.Status(http.StatusNotFound).JSON(fiber.Map{
 				"message": "Employee not found in SQL database",
+			})
+		}
+	}
+
+	if request.MongoDBEmployeeID != nil {
+		mongoDBEmployeeID := *request.MongoDBEmployeeID
+		filter := bson.M{"employeeId": mongoDBEmployeeID}
+
+		result, err := employeeCollection.DeleteOne(context.Background(), filter)
+		if err != nil {
+			tx.Rollback()
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"message": err.Error(),
+			})
+		}
+
+		if result.DeletedCount == 0 {
+			tx.Rollback()
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"message": "Employee not found in MongoDB",
 			})
 		}
 	}
